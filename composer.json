@@ -1,0 +1,25 @@
+{
+    "name": "lithemod/csrf",
+    "description": "The CSRF (Cross-Site Request Forgery) middleware in Lithe protects your application from attacks that attempt to perform actions on behalf of the user without their authorization.",
+    "type": "library",
+    "require": {
+        "lithemod/flow": "^1.0",
+        "lithemod/session-support": "^1.0",
+        "lithemod/log": "^1.0",
+        "lithemod/httpexception": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "files": [
+            "src/Csrf.php"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "license": "MIT",
+    "scripts": {
+        "test": "phpunit"
+    }
+}
