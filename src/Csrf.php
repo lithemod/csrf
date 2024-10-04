@@ -87,7 +87,7 @@ function csrf(array $options = [])
                     }
                     return $sessionToken;
                 } catch (\Exception $e) {
-                    Log::error($e);
+                    Log::error($e->getMessage());
                     return '';
                 }
             }
@@ -116,14 +116,14 @@ function csrf(array $options = [])
                 $sessionToken = Session::get($name);
                 $tokenField = $this->req->input($name);
 
-                // Check if the session token is fresh
+                // Check if the session token is still fresh (not expired)
                 if (!$this->isTokenFresh()) {
-                    $this->generateToken(true); // Regenerate token if expired
-                    // Validate new token
-                    return $this->validateToken($sessionToken, $token, $tokenField, $checkBody);
+                    // If the token has expired, regenerate a new one and stop the validation
+                    $this->generateToken(true);
+                    return false; // The old token is no longer valid, return false immediately
                 }
 
-                // Validate token when fresh
+                // If the token is still fresh, proceed to validate it
                 return $this->validateToken($sessionToken, $token, $tokenField, $checkBody);
             }
 
@@ -201,8 +201,16 @@ function csrf(array $options = [])
             }
         };
 
+        $time = $name . '_time';
+        $tokenTime = Session::get($time) ?? 0;
+        $isExpired = (time() - $tokenTime) >= $expire;
+
+        if ($isExpired) {
+            $csrf->generateToken(true);
+        }
+
         // Check CSRF token automatically if $checkBody is true and method is in $bodyMethods
-        if ($checkBody && in_array($req->method, $bodyMethods)) {
+        if ($checkBody && in_array($req->method(), $bodyMethods)) {
             $token = $req->input($name, '');
 
             if (!$csrf->verifyToken($token, true)) {
